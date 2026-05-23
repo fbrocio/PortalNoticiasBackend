@@ -36,7 +36,7 @@ El proyecto esta pensado como parte previa al portal Django: descarga informacio
 
 ```bash
 git clone <url-del-repositorio>
-cd "0_PRACTICA FINAL_SQLite"
+cd "DjangoProject_Backend"
 ```
 
 2. Crea y activa un entorno virtual:
