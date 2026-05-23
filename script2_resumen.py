@@ -14,7 +14,7 @@ def script_2():
     DB_PATH = config.DB_PATH
 
     # =========================================================
-    # PROCESO 6 - Leer tablas y detectar vÃ­deos pendientes
+    # PROCESO 6 - Leer tablas y detectar vídeos pendientes
     # =========================================================
     dfs = utils.extraer_info_bd()
     df_videos = dfs.get("videos", pd.DataFrame())
@@ -34,7 +34,7 @@ def script_2():
     id_col_resumen = detectar_columna_id(df_resumen, ["video_id"])
 
     if id_col_videos is None:
-        raise KeyError(f"No se encontrÃ³ columna ID en VIDEOS. Columnas disponibles: {list(df_videos.columns)}")
+        raise KeyError(f"No se encontró columna ID en VIDEOS. Columnas disponibles: {list(df_videos.columns)}")
 
     def select_new_videos(df_videos_local, df_resumen_local, col_id_videos, col_id_resumen):
         df_con_transcripcion = df_videos_local[
@@ -58,10 +58,10 @@ def script_2():
     ).sum()
 
     if total_sin_transcripcion:
-        print(f"âš ï¸  {total_sin_transcripcion} vÃ­deo(s) omitidos por no tener transcripciÃ³n.", flush=True)
+        print(f"⚠️  {total_sin_transcripcion} vídeo(s) omitidos por no tener transcripción.", flush=True)
 
     if not ids_pendientes:
-        print("No hay vÃ­deos pendientes de resumen.", flush=True)
+        print("No hay vídeos pendientes de resumen.", flush=True)
         return
 
     def obtener_transcripciones_por_ids(df, ids, col_id):
@@ -101,12 +101,12 @@ def script_2():
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel("models/gemini-2.5-flash-lite")
         prompt = (
-            "Voy a pasar una transcripciÃ³n de un vÃ­deo."
-            "Resume Ãºnicamente el contenido de valor de forma clara, concisa y estructurada, obviando todo lo 'contextual'." \
-            "No empiece con frases de relleno como 'AquÃ­ tienes un resumen..." \
-            "Responde unicamente el resumen, de manera que pueda copiarse y pegarse directamente a un noticiero sin necesidad de editarlo." \
-            "AjÃºstate a 200-250 palabras y utiliza formato de boletÃ­n de noticias."
-            "Utiliza un tono divulgativo y cercano, pero mÃ¡s formal que el orador original.\n\n"
+            "Voy a pasar una transcripción de un vídeo."
+            "Resume únicamente el contenido de valor de forma clara, concisa y estructurada, obviando todo lo 'contextual'."
+            "No empiece con frases de relleno como 'Aquí tienes un resumen..."
+            "Responde unicamente el resumen, de manera que pueda copiarse y pegarse directamente a un noticiero sin necesidad de editarlo."
+            "Ajústate a 200-250 palabras y utiliza formato de boletín de noticias."
+            "Utiliza un tono divulgativo y cercano, pero más formal que el orador original.\n\n"
             f"{text}"
         )
         response = model.generate_content(prompt)
@@ -116,7 +116,7 @@ def script_2():
     total_videos = len(nuevas_transcripciones)
     num_batches = math.ceil(total_videos / BATCH_SIZE)
 
-    print(f"\nVÃ­deos pendientes de resumen: {total_videos} | Lotes: {num_batches}", flush=True)
+    print(f"\nVídeos pendientes de resumen: {total_videos} | Lotes: {num_batches}", flush=True)
 
     for i in range(num_batches):
         batch_transcripciones = nuevas_transcripciones[i * BATCH_SIZE:(i + 1) * BATCH_SIZE]
@@ -124,7 +124,7 @@ def script_2():
         batch_resumenes = []
 
         print(f"\n{'=' * 60}", flush=True)
-        print(f"LOTE {i + 1}/{num_batches} â€” {len(batch_transcripciones)} vÃ­deo(s)", flush=True)
+        print(f"LOTE {i + 1}/{num_batches} — {len(batch_transcripciones)} vídeo(s)", flush=True)
         print(f"{'=' * 60}", flush=True)
 
         for idx, transcripcion in enumerate(batch_transcripciones, start=1):
@@ -139,21 +139,21 @@ def script_2():
                     resumen = summarize_text_with_gemini(transcripcion, config.GEMINI_API_KEY)
 
                     if not resumen or not resumen.strip():
-                        print(f"  âš ï¸  Gemini devolviÃ³ un resumen vacÃ­o para '{titulo}'.", flush=True)
+                        print(f"  ⚠️  Gemini devolvió un resumen vacío para '{titulo}'.", flush=True)
                         resumen = ""
                     else:
                         palabras = resumen.split()
                         preview = " ".join(palabras[:20])
                         puntos = "..." if len(palabras) > 20 else ""
-                        print(f"  âœ… Resumen obtenido ({len(palabras)} palabras).", flush=True)
+                        print(f"  ✅ Resumen obtenido ({len(palabras)} palabras).", flush=True)
                         print(f"     Vista previa: {preview}{puntos}", flush=True)
 
                     batch_resumenes.append(resumen)
                     break
 
                 except Exception as e:
-                    print(f"  ðŸ” DEBUG â€” Tipo de excepciÃ³n: {type(e).__name__}", flush=True)
-                    print(f"  ðŸ” DEBUG â€” Mensaje completo: {str(e)}", flush=True)
+                    print(f"  🔍 DEBUG — Tipo de excepción: {type(e).__name__}", flush=True)
+                    print(f"  🔍 DEBUG — Mensaje completo: {str(e)}", flush=True)
 
                     tipo, segundos = clasificar_error_gemini(e)
 
@@ -183,8 +183,8 @@ def script_2():
             cursor.executemany(query, list_resumenes_nuevos)
             conn.commit()
 
-        print(f"  ðŸ’¾ Lote {i + 1} guardado en Base de Datos.", flush=True)
+        print(f"  💾 Lote {i + 1} guardado en Base de Datos.", flush=True)
 
     print(f"\n{'=' * 60}", flush=True)
-    print(f"PROCESO COMPLETADO: {total_videos} vÃ­deo(s) procesados en {num_batches} lote(s).", flush=True)
+    print(f"PROCESO COMPLETADO: {total_videos} vídeo(s) procesados en {num_batches} lote(s).", flush=True)
     print(f"{'=' * 60}\n", flush=True)
